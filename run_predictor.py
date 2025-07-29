@@ -12,57 +12,51 @@ import joblib
 from feature_engineering import FeatureEngineer
 import onnxruntime as ort
 
-# Paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = r'C:\downloads\ULTRA_LOW_LATENCY_TRADE_SIGNAL_ENGINE\model.onnx'
-SCALER_PATH = r'C:\downloads\ULTRA_LOW_LATENCY_TRADE_SIGNAL_ENGINE\preprocessor.pkl'
-DATA_PATH = r'C:\downloads\ULTRA_LOW_LATENCY_TRADE_SIGNAL_ENGINE\latest_features.csv'
-LOG_DIR = r'C:\downloads\ULTRA_LOW_LATENCY_TRADE_SIGNAL_ENGINE\logs'
+MODEL_PATH = r"C:\downloads\ULTRA_LOW_LATENCY_TRADE_SIGNAL_ENGINE\model.onnx"
+SCALER_PATH = r"C:\downloads\ULTRA_LOW_LATENCY_TRADE_SIGNAL_ENGINE\preprocessor.pkl"
 
-# Setup
+LOG_DIR = os.path.join(BASE_DIR, "logs")
 os.makedirs(LOG_DIR, exist_ok=True)
-os.makedirs(os.path.dirname(DATA_PATH), exist_ok=True)
-
 logging.basicConfig(
     filename=os.path.join(LOG_DIR, "predictor.log"),
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
-# Load model and scaler
 try:
-    session = ort.InferenceSession(MODEL_PATH, providers=["CPUExecutionProvider"])
+    session = ort.InferenceSession(MODEL_PATH, providers=["CPUExecutionProvider" ])
     input_name = session.get_inputs()[0].name
     scaler = joblib.load(SCALER_PATH)
-    logging.info("✅ Model and scaler loaded successfully.")
+    logging.info(" Model and scaler loaded successfully.")
 except Exception as e:
     logging.exception(" Failed to load model or scaler.")
     raise e
 
-# Feature engineering setup
 fe = FeatureEngineer(window=5)
 
 def measure_latency(start, label=""):
     elapsed_ms = (time.perf_counter() - start) * 1000
-    logging.info(f"{label} latency: {elapsed_ms:.2f} ms")
+    logging.info(f" {label} latency: {elapsed_ms:.2f} ms")
     print(f"{label} latency: {elapsed_ms:.2f} ms")
 
 def predict(features_df: pd.DataFrame) -> int:
     try:
+        # Extract relevant columns
         features = features_df[[
             "price_now", "return_5", "rolling_mean_5", "rolling_std_5",
             "vwap_diff", "volume_sum_5", "rsi_5", "tick_inter_arrival_time"
         ]]
 
-        # Scaling
+        # 
         scale_start = time.perf_counter()
         scaled_features = scaler.transform(features.astype(np.float32))
-        measure_latency(scale_start, "Scaling")
+        measure_latency(scale_start, " Scaling")
 
-        # ONNX inference
+        #  Inference 
         infer_start = time.perf_counter()
         prediction = session.run(None, {input_name: scaled_features})[0]
-        measure_latency(infer_start, "ONNX Inference")
+        measure_latency(infer_start, " ONNX Inference")
 
         predicted_class = int(prediction[0])
         logging.info(f" Prediction: {predicted_class}")
@@ -71,22 +65,6 @@ def predict(features_df: pd.DataFrame) -> int:
     except Exception as e:
         logging.exception(" Prediction error")
         return -1
-
-def append_to_csv(row: pd.Series):
-    try:
-        # Append to CSV
-        if os.path.exists(DATA_PATH):
-            existing_df = pd.read_csv(DATA_PATH)
-            combined_df = pd.concat([existing_df, pd.DataFrame([row])], ignore_index=True)
-
-            # Keep only latest 1000 rows
-            combined_df = combined_df.tail(1000)
-        else:
-            combined_df = pd.DataFrame([row])
-
-        combined_df.to_csv(DATA_PATH, index=False)
-    except Exception as e:
-        logging.exception(" Failed to append or save CSV")
 
 async def stream_binance(symbol="btcusdt"):
     url = f"wss://stream.binance.com:9443/ws/{symbol}@trade"
@@ -104,29 +82,23 @@ async def stream_binance(symbol="btcusdt"):
                     volume = float(data['q'])
                     timestamp = datetime.fromtimestamp(data['T'] / 1000).strftime("%Y-%m-%d %H:%M:%S")
 
-                    # Feature engineering
+                    #  Feature Engineering 
                     fe.update(price, volume, timestamp)
                     features_df = fe.compute_features()
 
                     if features_df is not None:
-                        signal = predict(features_df)
-                        features_df["signal"] = signal
-                        features_df["timestamp"] = timestamp
-
                         logging.info(f" Features: {features_df.to_dict(orient='records')[0]}")
-                        print(f"Trade Signal: {signal}")
+                        signal = predict(features_df)
+                        print(f" Trade Signal: {signal}")
                         print(features_df)
-
-                        # Save to CSV
-                        append_to_csv(features_df.iloc[0])
-
-                        measure_latency(full_start, "End-to-End")
+                        measure_latency(full_start, " End-to-End")
 
                 except Exception as inner_e:
                     logging.exception(" Error processing WebSocket message")
 
     except Exception as conn_e:
-        logging.exception(" WebSocket connection error")
+        logging.exception("WebSocket connection error")
+
 
 if __name__ == "__main__":
     try:
@@ -135,4 +107,3 @@ if __name__ == "__main__":
         logging.info(" Interrupted by user.")
     except Exception as e:
         logging.exception(" Critical error in main loop")
-
