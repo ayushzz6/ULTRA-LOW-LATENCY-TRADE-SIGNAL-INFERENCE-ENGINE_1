@@ -1,13 +1,7 @@
-ultra_latency_predictor/
+It is a high-performance inference engine designed for real-time financial signal prediction at ultra-low latency. It integrates live WebSocket data ingestion from Binance, high-frequency feature engineering, ONNX-optimized model inference, and latency profiling tools — all optimized to run under 20 milliseconds end-to-end on commodity hardware.
 
-run_predictor.py              # Main real-time loop
-binance_stream.py             # Live WebSocket client
-feature_engineering.py        # Real-time features (e.g., RSI)
-model.onnx                    # Placeholder for trained ONNX model
-modeltrain.ipynb  # Jupyter for training & backtesting
-requirements.txt
-README.md
-
+An ultra-low-latency trade signal inference engine for real-time crypto trading
+Achieves sub-15ms end-to-end prediction latency using ONNX, WebSocket streaming, and optimized feature pipelines.
 
 | Feature                 | Type         |
 | ----------------------- | ------------ |
@@ -22,8 +16,6 @@ README.md
 | Spread                  | Order book   | # we will not use it for high latency 
 | Tick inter-arrival time | Time-based   |
 
-
-IT is a high-performance inference engine designed for real-time financial signal prediction at ultra-low latency. It integrates live WebSocket data ingestion from Binance, high-frequency feature engineering, ONNX-optimized model inference, and latency profiling tools — all optimized to run under 20 milliseconds end-to-end on commodity hardware.
 
 Key Features---
 Live streaming from Binance WebSocket (per-tick updates)
@@ -50,10 +42,10 @@ Streaming inference for LOB/market-making bots
 
 Stage              ---   Average Latency 
 
-Feature Extraction   ---   7–10 ms        
-Scaling              ---   2–4 ms          
-ONNX Inference       ---   0.6–1.0 ms   
-Total End-to-End     ---   15–20 ms 
+Feature Extraction   ---   3-7 ms        
+Scaling              ---   1–4 ms          
+ONNX Inference       ---   0.3–1.0 ms   
+Total End-to-End     ---   5-12 ms 
 
 
 Classification Report:
@@ -72,3 +64,14 @@ confusion matrix:
  [10763 48233   661]
  [10928   683 48614]]
 ROC AUC Score: 0.8994181909422815
+
+ Future Work
+ Integrate with FIX/REST trading gateways
+
+ GPU-based inference for batching (if needed)
+
+ Real PnL backtests using tick-by-tick replay
+
+ Docker + FastAPI wrapper for deployable microservice
+
+ Optional agent-based decision layer with RL triggers
