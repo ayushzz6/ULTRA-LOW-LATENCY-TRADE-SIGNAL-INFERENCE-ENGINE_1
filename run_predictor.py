@@ -14,7 +14,7 @@ import onnxruntime as ort
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = r"C:\downloads\ULTRA_LOW_LATENCY_TRADE_SIGNAL_ENGINE\model.onnx"
-SCALER_PATH = r"C:\downloads\ULTRA_LOW_LATENCY_TRADE_SIGNAL_ENGINE\preprocessor.pkl"
+SCALER_PATH = r"C:\downloads\ULTRA_LOW_LATENCY_TRADE_SIGNAL_ENGINE\preprocessor.joblib"
 
 LOG_DIR = os.path.join(BASE_DIR, "logs")
 os.makedirs(LOG_DIR, exist_ok=True)

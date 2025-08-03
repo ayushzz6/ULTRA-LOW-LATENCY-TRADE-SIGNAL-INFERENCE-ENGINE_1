@@ -10,6 +10,8 @@ numba
 matplotlib
 
 
+
+tqdm
 joblib
 skl2onnx
 
