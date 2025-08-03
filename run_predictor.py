@@ -75,16 +75,16 @@ async def stream_binance(symbol="btcusdt"):
 
             async for message in ws:
                 try:
-                    full_start = time.perf_counter()
-
+                    full_start = time.perf_counter()   # calculate end-to-end latency
+                    
                     data = json.loads(message)
                     price = float(data['p'])
                     volume = float(data['q'])
                     timestamp = datetime.fromtimestamp(data['T'] / 1000).strftime("%Y-%m-%d %H:%M:%S")
 
-                    #  Feature Engineering 
-                    fe.update(price, volume, timestamp)
-                    features_df = fe.compute_features()
+                    #  Feature Engineering
+                    fe.update(price, volume, timestamp)   # Update features after each message and store the data internally
+                    features_df = fe.compute_features()   # Compute features after each message  like rolling mean, std, RSI, etc.
 
                     if features_df is not None:
                         logging.info(f" Features: {features_df.to_dict(orient='records')[0]}")

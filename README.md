@@ -1,4 +1,4 @@
-It is a high-performance inference engine designed for real-time financial signal prediction at ultra-low latency. It integrates live WebSocket data ingestion from Binance, high-frequency feature engineering, ONNX-optimized model inference, and latency profiling tools — all optimized to run under 20 milliseconds end-to-end on commodity hardware.
+It is a high-performance inference engine designed for real-time financial signal prediction at ultra-low latency. It integrates live WebSocket data ingestion from Binance, high-frequency feature engineering, ONNX-optimized model inference, and latency profiling tools  all optimized to run under 10-15 milliseconds end-to-end on commodity hardware.
 
 An ultra-low-latency trade signal inference engine for real-time crypto trading
 Achieves sub-15ms end-to-end prediction latency using ONNX, WebSocket streaming, and optimized feature pipelines.
@@ -19,25 +19,35 @@ Achieves sub-15ms end-to-end prediction latency using ONNX, WebSocket streaming,
 
 Key Features---
 Live streaming from Binance WebSocket (per-tick updates)
-
 Optimized feature engineering for volatility, momentum, and flow
-
 ONNX Runtime inference low latency 
-
 Latency profiling at each processing stage (feature, scale, predict)
-
 Modular design (supports XGBoost, LightGBM, CatBoost)
-
 End-to-end extensibility for deployment to trading systems or agents
 
+
+Model Details
+
+Model: XGBoost (multi:softprob)
+Classes: Buy(1) / Sell(2) / Hold(0) (3 classes)
+Loss Function: Multi-class Log Loss (mlogloss)
+
+Features Used:
+
+price_now
+return_5
+rolling_mean_5
+rolling_std_5
+vwap_diff
+volume_sum_5
+rsi_5
+tick_inter_arrival_time
+Real-time feature engineering is performed with a window size of 5 trades.
+
 Designed for---
-
 High-frequency trading (HFT)
-
 Latency-sensitive signal generation
-
 Tick-level backtesting or reinforcement learning
-
 Streaming inference for LOB/market-making bots
 
 Stage              ---   Average Latency 
@@ -67,11 +77,7 @@ ROC AUC Score: 0.8994181909422815
 
  Future Work
  Integrate with FIX/REST trading gateways
-
  GPU-based inference for batching (if needed)
-
  Real PnL backtests using tick-by-tick replay
-
  Docker + FastAPI wrapper for deployable microservice
-
  Optional agent-based decision layer with RL triggers
